@@ -1,5 +1,6 @@
 #include "i2c.h"
 #include "ilda_reader.h"
+#include "GPIO.h"
 #include <stdint.h>
 
 #define PCONP 		(*(volatile unsigned int*) 0x400FC0C4)
@@ -29,15 +30,23 @@ volatile uint32_t I2CMasterState = 0;
 volatile uint32_t busy = 0;
 volatile uint32_t command = 0;
 volatile uint32_t timeout = 0;
+volatile static uint8_t hs_mode = 0;
 
 void I2C0_IRQHandler(void) {
 	static int dataByteNr = 0;
 	uint8_t status = I2C0STAT & MASK;
-
-	switch(status) {
+	switch (status) {
 	case 0x08:
-		I2C0DAT = 0x1E;
-		I2C0CONCLR = (SIC | STA);
+		if (!hs_mode) {
+			I2C0DAT = 0x0F;
+			hs_mode = 1;
+			I2C0SCLH = 0x08;
+			I2C0SCLL = 0x08;
+			I2C0CONCLR = (SIC | STA);
+		}else {
+			I2C0DAT = 0x1E;
+			I2C0CONCLR = (SIC | STA);
+		}
 		break;
 	case 0x10:
 		I2C0DAT = 0x1E;
@@ -52,7 +61,7 @@ void I2C0_IRQHandler(void) {
 		I2C0CONCLR = SIC;
 	case 0x28:
 		if (dataByteNr < 2) {
-			if(command)
+			if (command)
 				I2C0DAT = getDataByte2(dataByteNr);
 			else
 				I2C0DAT = getDataByte1(dataByteNr);
@@ -85,8 +94,8 @@ void i2cInit(void) {
 	PINSEL1 |= ((1 << 22) | (1 << 24)); 	// SDA0 & SCL0 pin select
 
 	I2C0CONCLR = I2EN | STA | SIC | AA;
-	I2CPADCFG &= ~(1 | 1 << 2);				// everything standard mode, for fast mode+ bit 0 and 2 must be 1
-
+	I2CPADCFG &= ~(1 | 1 << 2);	// everything standard mode, for fast mode+ bit 0 and 2 must be 1
+	I2CPADCFG |= (1 | 1 << 2);
 	//I2C0SCLH = 0x80;
 	//I2C0SCLL = 0x80;					//standard mode speed = pclk/(LL + LH). 16M/80+80 = 100k
 	I2C0SCLH = 0x20;
@@ -102,9 +111,8 @@ void startTransmit(int n) {
 	I2C0CONSET = STA;
 	busy = I2C_BUSY;
 	command = n;
-
-	while(busy == I2C_BUSY) {
-		if(timeout >= MAX_TIMEOUT) {
+	while (busy == I2C_BUSY) {
+		if (timeout >= MAX_TIMEOUT) {
 			busy = I2C_TIMEOUT;
 			break;
 		}

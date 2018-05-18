@@ -23,25 +23,25 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: Laser.axf
+all: Laser_LPC.axf
 
 # Tool invocations
-Laser.axf: $(OBJS) $(USER_OBJS)
+Laser_LPC.axf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
-	arm-none-eabi-gcc -nostdlib -Xlinker -Map="Laser.map" -Xlinker --gc-sections -Xlinker -print-memory-usage -mcpu=cortex-m3 -mthumb -T "Laser_Debug.ld" -o "Laser.axf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-gcc -nostdlib -Xlinker -Map="Laser_LPC.map" -Xlinker --gc-sections -Xlinker -print-memory-usage -mcpu=cortex-m3 -mthumb -T "Laser_Debug.ld" -o "Laser_LPC.axf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 	$(MAKE) --no-print-directory post-build
 
 # Other Targets
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Laser.axf
+	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) Laser_LPC.axf
 	-@echo ' '
 
 post-build:
 	-@echo 'Performing post-build steps'
-	-arm-none-eabi-size "Laser.axf"; # arm-none-eabi-objcopy -v -O binary "Laser.axf" "Laser.bin" ; # checksum -p LPC1769 -d "Laser.bin";
+	-arm-none-eabi-size "Laser_LPC.axf"; # arm-none-eabi-objcopy -v -O binary "Laser_LPC.axf" "Laser_LPC.bin" ; # checksum -p LPC1769 -d "Laser_LPC.bin";
 	-@echo ' '
 
 .PHONY: all clean dependents

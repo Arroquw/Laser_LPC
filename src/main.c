@@ -9,12 +9,13 @@ int main(int argc, char* argv[]) {
 	i2cInit();
 	generateSine();
 	int n = 0;
-	gpio0WritePin(21, 0);
+	gpio0WritePin(21, 1);
 	gpio0WritePin(22, 1);
 	while(1) {
 		startTransmit(n);
 		if(n) {
-
+			gpio0WritePin(22, 0);
+			gpio0WritePin(22, 1);
 		}
 		n ^= 1;
 	}

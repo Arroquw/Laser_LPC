@@ -5,7 +5,7 @@
  * Generated linker script file for LPC1769
  * Created from linkscript.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.23
- * LPCXpresso v8.2.2 [Build 650] [2016-09-09]  on 04-May-2018 14:54:12
+ * LPCXpresso v8.2.2 [Build 650] [2016-09-09]  on 17-May-2018 16:57:18
  */
 
 INCLUDE "Laser_Debug_library.ld"
